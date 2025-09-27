@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express"
+import { NextFunction, Request, Response } from "express";
 
 export interface IError extends Error {
     statusCode: number
@@ -41,4 +41,18 @@ export const globalErrorHandling = (error: IError, req: Request, res: Response, 
         err_message: error.message || "something went wrong ",
         satck: process.env.MOOD === 'development' ? error.stack : undefined, error
     })
+}
+
+
+export class UnathorizedException extends ApllicationError {
+    constructor(message: string, cause?: unknown) {
+        super(message, 401, cause);
+    }
+}
+
+
+export class ForbiddenException extends ApllicationError {
+    constructor(message: string, cause?: unknown) {
+        super(message, 403, cause);
+    }
 }

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.globalErrorHandling = exports.ConflictException = exports.NotFoundException = exports.BadRequestException = exports.ApllicationError = void 0;
+exports.ForbiddenException = exports.UnathorizedException = exports.globalErrorHandling = exports.ConflictException = exports.NotFoundException = exports.BadRequestException = exports.ApllicationError = void 0;
 class ApllicationError extends Error {
     statusCode;
     constructor(message, statusCode = 400, cause) {
@@ -38,3 +38,15 @@ const globalErrorHandling = (error, req, res, next) => {
     });
 };
 exports.globalErrorHandling = globalErrorHandling;
+class UnathorizedException extends ApllicationError {
+    constructor(message, cause) {
+        super(message, 401, cause);
+    }
+}
+exports.UnathorizedException = UnathorizedException;
+class ForbiddenException extends ApllicationError {
+    constructor(message, cause) {
+        super(message, 403, cause);
+    }
+}
+exports.ForbiddenException = ForbiddenException;

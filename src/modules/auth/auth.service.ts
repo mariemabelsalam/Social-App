@@ -6,7 +6,7 @@ import { BadRequestException, ConflictException, NotFoundException } from '../..
 import { comapareHash, generateHash } from '../../utils/security/hash.security';
 import { UserModel } from './../../DB/models/User.model';
 import { IConfirmEmailBodyInputsDTto, ILoginBodyInputsDTto, ISignupBodyInputsDTto } from './auth.tdo';
-import { generateToken } from '../../utils/security/token.security';
+import { createLoginCredentials, generateToken } from '../../utils/security/token.security';
 
 class AuthenticationService {
     private UserModel = new UserRepository(UserModel)
@@ -74,15 +74,9 @@ class AuthenticationService {
         if (!await comapareHash(password, user.password)) {
             throw new NotFoundException("invalid email or password")
         }
-        const access_token = await generateToken({
-            payload: { _id: user._id }
-        })
-        const refresh_token = await generateToken({
-            payload: { _id: user._id },
-            secret: process.env.REFRESH_USER_TOKEN_SIGNATURE as string,
-            options: { expiresIn: Number(process.env.REFRESH_TOKEN_EXPIRES_IN) }
-        })
-        return res.status(200).json({ message: "done", data: { credentials: { access_token, refresh_token } } })
+        const credentials = await createLoginCredentials(user)
+
+        return res.status(200).json({ message: "done", data: { credentials } })
     }
 }
 

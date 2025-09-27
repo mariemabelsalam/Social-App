@@ -69,15 +69,8 @@ class AuthenticationService {
         if (!await (0, hash_security_1.comapareHash)(password, user.password)) {
             throw new error_response_1.NotFoundException("invalid email or password");
         }
-        const access_token = await (0, token_security_1.generateToken)({
-            payload: { _id: user._id }
-        });
-        const refresh_token = await (0, token_security_1.generateToken)({
-            payload: { _id: user._id },
-            secret: process.env.REFRESH_USER_TOKEN_SIGNATURE,
-            options: { expiresIn: Number(process.env.REFRESH_TOKEN_EXPIRES_IN) }
-        });
-        return res.status(200).json({ message: "done", data: { credentials: { access_token, refresh_token } } });
+        const credentials = await (0, token_security_1.createLoginCredentials)(user);
+        return res.status(200).json({ message: "done", data: { credentials } });
     };
 }
 exports.default = new AuthenticationService();

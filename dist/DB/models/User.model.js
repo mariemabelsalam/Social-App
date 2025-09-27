@@ -13,18 +13,43 @@ var RoleEnum;
     RoleEnum["admin"] = "admin";
 })(RoleEnum || (exports.RoleEnum = RoleEnum = {}));
 const UserSchema = new mongoose_1.Schema({
-    firstName: { type: String, required: true, minLength: 2, maxLength: 20 },
-    lastName: { type: String, required: true, minLength: 2, maxLength: 20 },
-    email: { type: String, required: true, unique: true },
+    firstName: {
+        type: String,
+        required: true,
+        minLength: 2,
+        maxLength: 20
+    },
+    lastName: {
+        type: String,
+        required: true,
+        minLength: 2,
+        maxLength: 20
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    gender: {
+        type: String,
+        enum: GenderEnum,
+        default: GenderEnum.male
+    },
+    role: {
+        type: String,
+        enum: RoleEnum,
+        default: RoleEnum.user
+    },
     confirmEmailOtp: { type: String },
     confirmedAt: { type: Date },
-    password: { type: String, required: true },
     resetPasswordOtp: { type: String },
     changeCredentialsTime: { type: Date },
     phone: { type: String },
     address: { type: String },
-    gender: { type: String, enum: GenderEnum, default: GenderEnum.male },
-    role: { type: String, enum: RoleEnum, default: RoleEnum.user },
 }, {
     timestamps: true,
     toJSON: { virtuals: true },
