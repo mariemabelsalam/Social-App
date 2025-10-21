@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const user_repository_1 = require("../../DB/repository/user.repository");
 const email_event_1 = require("../../utils/event/email.event");
 const otp_1 = require("../../utils/otp");
 const error_response_1 = require("../../utils/response/error.response");
 const hash_security_1 = require("../../utils/security/hash.security");
-const User_model_1 = require("./../../DB/models/User.model");
 const token_security_1 = require("../../utils/security/token.security");
+const User_model_1 = require("./../../DB/models/User.model");
+const user_repository_1 = require("./../../DB/repository/user.repository");
 class AuthenticationService {
     UserModel = new user_repository_1.UserRepository(User_model_1.UserModel);
     constructor() { }
@@ -23,9 +23,10 @@ class AuthenticationService {
         const otp = (0, otp_1.generateNumberOtp)();
         const user = await this.UserModel.createUser({
             data: [{
-                    userName, email,
-                    password: await (0, hash_security_1.generateHash)(password),
-                    confirmEmailOtp: await (0, hash_security_1.generateHash)(String(otp))
+                    userName,
+                    email,
+                    password,
+                    confirmEmailOtp: `${otp}`
                 }]
         });
         email_event_1.emailEvent.emit("confirmEmail", { to: email, otp });

@@ -2,8 +2,7 @@ import type { Secret, SignOptions } from 'jsonwebtoken';
 import { JwtPayload, sign, verify } from 'jsonwebtoken';
 import { v4 as uuid } from 'uuid';
 import { HTokenDocument, TokenModel } from '../../DB/models/Token.model';
-import { TokenRepository } from '../../DB/repository/token.repository';
-import { UserRepository } from '../../DB/repository/user.repository';
+import { UserRepository, TokenRepository } from '../../DB/repository/';
 import { BadRequestException, UnathorizedException } from '../response/error.response';
 import { HUserDocument, RoleEnum, UserModel } from './../../DB/models/User.model';
 

@@ -1,12 +1,14 @@
 import type { Request, Response } from 'express';
-import { UserRepository } from '../../DB/repository/user.repository';
 import { emailEvent } from '../../utils/event/email.event';
 import { generateNumberOtp } from '../../utils/otp';
 import { BadRequestException, ConflictException, NotFoundException } from '../../utils/response/error.response';
-import { comapareHash, generateHash } from '../../utils/security/hash.security';
+import { comapareHash } from '../../utils/security/hash.security';
+import { createLoginCredentials } from '../../utils/security/token.security';
 import { UserModel } from './../../DB/models/User.model';
+import { UserRepository } from './../../DB/repository/user.repository';
 import { IConfirmEmailBodyInputsDTto, ILoginBodyInputsDTto, ISignupBodyInputsDTto } from './auth.tdo';
-import { createLoginCredentials, generateToken } from '../../utils/security/token.security';
+import { successResponse } from '../../utils/response/success.response';
+import { ILoginResponse } from './auth.entities';
 
 class AuthenticationService {
     private UserModel = new UserRepository(UserModel)
@@ -26,13 +28,14 @@ class AuthenticationService {
         const user = await this.UserModel.createUser({
             data:
                 [{
-                    userName, email,
-                    password: await generateHash(password),
-                    confirmEmailOtp: await generateHash(String(otp))
+                    userName,
+                    email,
+                    password,
+                    confirmEmailOtp: `${otp}`
                 }]
         })
         emailEvent.emit("confirmEmail", { to: email, otp });
-        return res.status(201).json({ message: "done", data: { user } })
+        return successResponse({ res, statusCode: 201, })
     }
 
     confirmEmail = async (req: Request, res: Response): Promise<Response> => {
@@ -57,7 +60,7 @@ class AuthenticationService {
                 $unset: { confirmEmailOtp: 1 }
             }
         })
-        return res.status(201).json({ message: "done", data: req.body })
+        return successResponse({res,statusCode:201,data:req.body})
     }
 
     login = async (req: Request, res: Response): Promise<Response> => {
@@ -76,7 +79,7 @@ class AuthenticationService {
         }
         const credentials = await createLoginCredentials(user)
 
-        return res.status(200).json({ message: "done", data: { credentials } })
+        return successResponse<ILoginResponse>({ res, data: { credentials } })
     }
 }
 

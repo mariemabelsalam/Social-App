@@ -5,18 +5,22 @@ import express from 'express';
 import { rateLimit } from 'express-rate-limit';
 import helmet from 'helmet';
 import { resolve } from 'node:path';
-import connectDB from './DB/connection.db';
-import authController from './modules/auth/auth.controller';
-import userController from './modules/user/user.controller';
-import { BadRequestException, globalErrorHandling } from './utils/response/error.response';
-import { createGetPreSignedLink, deleteFile, getFile } from './utils/multer/s3.config';
-import { promisify } from 'node:util';
 import { pipeline } from 'node:stream';
+import { promisify } from 'node:util';
+import connectDB from './DB/connection.db';
+
+import { authRouter, userRouter, postRouter, initializeIo } from './modules'
+import { createGetPreSignedLink, deleteFile, getFile } from './utils/multer/s3.config';
+import { BadRequestException, globalErrorHandling } from './utils/response/error.response';
 config({ path: resolve('./config/.env.dev') });
 
 
 
 const createS3WriteStreamPipe = promisify(pipeline)
+
+
+
+
 
 const limiter = rateLimit({
     windowMs: 60 * 60000,
@@ -24,6 +28,8 @@ const limiter = rateLimit({
     message: { error: "too many request please try again later" },
     statusCode: 429
 })
+
+
 
 const bootstartp = async (): Promise<void> => {
     const app: Express = express();
@@ -34,8 +40,9 @@ const bootstartp = async (): Promise<void> => {
         res.json({ message: `welcome to ${process.env.APPLICATION_NAME}` })
     })
 
-    app.use('/auth', authController)
-    app.use('/user', userController)
+    app.use('/auth', authRouter)
+    app.use('/user', userRouter)
+    app.use('/post', postRouter)
 
     app.get("test", async (req: Request, res: Response) => {
         const { Key } = req.query as { Key: string };
@@ -80,10 +87,14 @@ const bootstartp = async (): Promise<void> => {
 
     await connectDB()
 
-    app.listen(port, () => {
+
+    const httpServer = app.listen(port, () => {
         console.log(`server is running on port ${port}`);
 
     })
+
+    initializeIo(httpServer)
+
 }
 
 export default bootstartp

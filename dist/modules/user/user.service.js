@@ -28,15 +28,7 @@ class UserService {
                 update.changeCredentialsTime = new Date();
                 break;
             default:
-                await this.tokenModel.create({
-                    data: [
-                        {
-                            jti: req.decoded?.jti,
-                            expiresIn: req.decoded?.iat + Number(process.env.REFRESH_TOKEN_EXPIRES_IN),
-                            userId: req.decoded?._id
-                        }
-                    ]
-                });
+                await (0, token_security_1.creatreRevokeToken)(req.decoded);
                 statusCode = 201;
                 break;
         }
@@ -48,21 +40,22 @@ class UserService {
             message: "done"
         });
     };
+    refreshToken = async (req, res) => {
+        const credentials = await (0, token_security_1.createLoginCredentials)(req.user);
+        await (0, token_security_1.creatreRevokeToken)(req.decoded);
+        return res.status(201).json({ message: "done", data: { credentials } });
+    };
     profileImage = async (req, res) => {
-        const key = await (0, s3_config_1.uploadFile)({
-            storageApproach: cloud_multer_1.storageEnum.disk,
-            file: req.file,
+        const { ContentType, originalname } = req.body;
+        const { url, Key } = await (0, s3_config_1.createPreSignedUploadLink)({
+            ContentType,
+            originalname,
             path: `users/${req.decoded?._id}`
         });
-        return res.json({
-            message: "done",
-            data: {
-                key
-            }
-        });
+        return res.json({ message: "done", data: { url, Key } });
     };
     profileCoverImage = async (req, res) => {
-        const urls = (0, s3_config_1.uploadFiles)({
+        const urls = await (0, s3_config_1.uploadFiles)({
             storageApproach: cloud_multer_1.storageEnum.disk,
             files: req.files,
             path: `user/${req.decoded?._id}/cover`

@@ -1,13 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.decodedToken = exports.createLoginCredentials = exports.getSignatures = exports.detectSignatureLevel = exports.verifyToken = exports.generateToken = exports.LogoutEnum = exports.tokenEnum = exports.signatureLevelEnum = void 0;
+exports.creatreRevokeToken = exports.decodedToken = exports.createLoginCredentials = exports.getSignatures = exports.detectSignatureLevel = exports.verifyToken = exports.generateToken = exports.LogoutEnum = exports.tokenEnum = exports.signatureLevelEnum = void 0;
 const jsonwebtoken_1 = require("jsonwebtoken");
-const User_model_1 = require("./../../DB/models/User.model");
-const error_response_1 = require("../response/error.response");
-const user_repository_1 = require("../../DB/repository/user.repository");
 const uuid_1 = require("uuid");
 const Token_model_1 = require("../../DB/models/Token.model");
-const token_repository_1 = require("../../DB/repository/token.repository");
+const repository_1 = require("../../DB/repository/");
+const error_response_1 = require("../response/error.response");
+const User_model_1 = require("./../../DB/models/User.model");
 var signatureLevelEnum;
 (function (signatureLevelEnum) {
     signatureLevelEnum["Barear"] = "Barear";
@@ -85,8 +84,8 @@ const createLoginCredentials = async (user) => {
 };
 exports.createLoginCredentials = createLoginCredentials;
 const decodedToken = async ({ authorization, tokenType = tokenEnum.access }) => {
-    const userModel = new user_repository_1.UserRepository(User_model_1.UserModel);
-    const tokenModel = new token_repository_1.TokenRepository(Token_model_1.TokenModel);
+    const userModel = new repository_1.UserRepository(User_model_1.UserModel);
+    const tokenModel = new repository_1.TokenRepository(Token_model_1.TokenModel);
     const [barearKey, token] = authorization.split(' ');
     if (!barearKey || !token) {
         throw new error_response_1.UnathorizedException("missing token parts");
@@ -114,3 +113,20 @@ const decodedToken = async ({ authorization, tokenType = tokenEnum.access }) => 
     return { user, decoded };
 };
 exports.decodedToken = decodedToken;
+const creatreRevokeToken = async (decoded) => {
+    const tokenModel = new repository_1.TokenRepository(Token_model_1.TokenModel);
+    const [result] = await tokenModel.create({
+        data: [
+            {
+                jti: decoded.jti,
+                expiresIn: decoded?.iat + Number(process.env.REFRESH_TOKEN_EXPIRES_IN),
+                userId: decoded?._id
+            }
+        ]
+    }) || [];
+    if (!result) {
+        throw new error_response_1.BadRequestException("fail to revoke this token");
+    }
+    return result;
+};
+exports.creatreRevokeToken = creatreRevokeToken;
