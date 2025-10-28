@@ -7,3 +7,8 @@ export const logout = {
         flag: z.enum(LogoutEnum).default(LogoutEnum.only)
     })
 }
+
+export const welcome = z.strictObject({
+    name: z.string().min(2)
+})
+

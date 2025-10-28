@@ -7,7 +7,10 @@ export class ChatGetway {
     constructor() { }
 
     register = (socket: IAuthSocket, io: Server) => {
-        this.chatEvents.sayHello(socket , io )
-        this.chatEvents.type(socket , io )
+        this.chatEvents.sayHello(socket, io)
+        this.chatEvents.type(socket, io)
+        this.chatEvents.sendMessage(socket, io)
+        this.chatEvents.joinRoom(socket, io)
     }
+
 }

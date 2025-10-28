@@ -5,7 +5,7 @@ export interface IError extends Error {
 }
 
 
-export class ApllicationError extends Error {
+export class ApplicationError extends Error {
     constructor(message: string, public statusCode: number = 400, cause: unknown) {
         super(message, { cause });
         this.name = this.constructor.name;
@@ -14,7 +14,7 @@ export class ApllicationError extends Error {
 }
 
 
-export class BadRequestException extends ApllicationError {
+export class BadRequestException extends ApplicationError {
     constructor(message: string, cause?: unknown) {
         super(message, 400, cause);
         this.name = this.constructor.name;
@@ -23,13 +23,13 @@ export class BadRequestException extends ApllicationError {
 }
 
 
-export class NotFoundException extends ApllicationError {
+export class NotFoundException extends ApplicationError {
     constructor(message: string, cause?: unknown) {
         super(message, 404, cause);
     }
 }
 
-export class ConflictException extends ApllicationError {
+export class ConflictException extends ApplicationError {
     constructor(message: string, cause?: unknown) {
         super(message, 409, cause);
     }
@@ -44,14 +44,14 @@ export const globalErrorHandling = (error: IError, req: Request, res: Response, 
 }
 
 
-export class UnathorizedException extends ApllicationError {
+export class UnathorizedException extends ApplicationError {
     constructor(message: string, cause?: unknown) {
         super(message, 401, cause);
     }
 }
 
 
-export class ForbiddenException extends ApllicationError {
+export class ForbiddenException extends ApplicationError {
     constructor(message: string, cause?: unknown) {
         super(message, 403, cause);
     }

@@ -6,7 +6,7 @@ import { ChatGetway } from '../chat';
 import { BadRequestException } from '../../utils/response/error.response';
 
 
-const connectedSockets = new Map<string, string[]>()
+export const connectedSockets = new Map<string, string[]>()
 
 let io: undefined | Server = undefined
 export const initializeIo = (httpServer: HttpServer) => {

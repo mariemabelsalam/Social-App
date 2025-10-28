@@ -15,8 +15,24 @@ export class ChatEvents {
 
     type = (socket: IAuthSocket, io: Server) => {
         socket.on("typing", (data) => {
-           this.chatService.typing({socket,io,...data})
+            this.chatService.typing({ socket, io, ...data })
         })
     }
 
+    sendMessage = (socket: IAuthSocket, io: Server) => {
+        socket.on("sendMessage", (data: { content: string; sendTo: string }) => {
+            this.chatService.sendMessage({ ...data, socket, io })
+        })
+    }
+
+    joinRoom = (socket: IAuthSocket, io: Server) => {
+        socket.on("join_room", (data: { roomId: string }) => {
+            this.chatService.joinRoom({ ...data, socket, io })
+        })
+    }
+    sendGroupMessage = (socket: IAuthSocket, io: Server) => {
+        socket.on("sendGroupMessage", (data: { content: string, groupId: string }) => {
+            this.chatService.sendGroupMessage({ ...data, socket, io })
+        })
+    }
 }

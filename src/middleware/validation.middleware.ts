@@ -1,9 +1,10 @@
 
 import { NextFunction, Request, Response } from "express";
-import { ZodError, ZodType } from "zod";
-import { BadRequestException } from "../utils/response/error.response";
-import { z } from 'zod'
+import { GraphQLError } from "graphql";
 import { Types } from "mongoose";
+import { z, ZodError, ZodType } from "zod";
+import { BadRequestException } from "../utils/response/error.response";
+import { issue } from "zod/v4/core/util.cjs";
 
 export const generalFields = {
     userName: z.string().min(2).max(20),
@@ -11,22 +12,22 @@ export const generalFields = {
     password: z.string().min(6).max(20),
     confirmPassword: z.string(),
     otp: z.string().regex(/^\d{6}$/),
-    file:function(mimeType:string[]){
-        return  z.strictObject({
-        fieldName: z.string(),
-        originalName: z.string(),
-        encoding: z.string(),
-        mimeType: z.enum(mimeType),
-        buffer: z.any().optional(),
-        path:z.string().optional(),
-        size: z.number()
-    }).refine(data=>{
-        return data.buffer || data.path
-    },{error:'neither path or buffer is available' , path:['file']})
+    file: function (mimeType: string[]) {
+        return z.strictObject({
+            fieldName: z.string(),
+            originalName: z.string(),
+            encoding: z.string(),
+            mimeType: z.enum(mimeType),
+            buffer: z.any().optional(),
+            path: z.string().optional(),
+            size: z.number()
+        }).refine(data => {
+            return data.buffer || data.path
+        }, { error: 'neither path or buffer is available', path: ['file'] })
     },
-    id:z.string().refine( (data)=>{
+    id: z.string().refine((data) => {
         return Types.ObjectId.isValid(data)
-    },{error:"invalid object id format"})
+    }, { error: "invalid object id format" })
 }
 
 
@@ -67,5 +68,24 @@ export const validation = (schema: SchemaType) => {
         }
 
         return next() as unknown as NextFunction
+    }
+}
+
+
+export const graphValidation = async <T = any>(schema: ZodType, args: T) => {
+    const validationResult = await schema.safeParseAsync(args)
+    if (!validationResult.success) {
+        const ZError = validationResult.error as ZodError
+        throw new GraphQLError("validation error", {
+            extensions: {
+                statusCode: 400,
+                issues: {
+                    Key: "args",
+                    issues: ZError.issues.map((issue) => {
+                        return { path: issue.path, message: issue.message }
+                    })
+                }
+            }
+        })
     }
 }

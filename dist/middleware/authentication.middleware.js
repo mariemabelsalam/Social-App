@@ -20,6 +20,7 @@ const authentication = (tokenType = token_security_1.tokenEnum.access) => {
     };
 };
 exports.authentication = authentication;
+
 const authorization = (accessRoles = [], tokenType = token_security_1.tokenEnum.access) => {
     return async (req, res, next) => {
         if (!req.headers.authorization) {
@@ -40,4 +41,9 @@ const authorization = (accessRoles = [], tokenType = token_security_1.tokenEnum.
         next();
     };
 };
+
+
+
 exports.authorization = authorization;
+
+

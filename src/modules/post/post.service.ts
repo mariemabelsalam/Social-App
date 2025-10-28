@@ -9,6 +9,7 @@ import { BadRequestException, NotFoundException } from '../../utils/response/err
 import { successResponse } from '../../utils/response/success.response';
 import { LikePostQueryInputsDto } from './post.tdo';
 import { storageEnum } from '../../utils/multer/cloud.multer';
+import { connectedSockets, getIo } from '../getway';
 export const postAvailibility = (req: Request) => {
     return [
         { availability: AvailabilityEnum.public },
@@ -81,6 +82,12 @@ class PostService {
         })
         if (!post) {
             throw new NotFoundException("invalid post id or post not exist")
+        }
+        if (action !== LikeActionEnum.unlike) {
+            getIo().to(connectedSockets.get(post.createdBy.toString()) as string[]).emit("likePost",
+                {
+                    postId, userId: req.user?._id
+                })
         }
 
         return successResponse({ res })

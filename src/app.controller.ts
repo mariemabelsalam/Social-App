@@ -9,18 +9,17 @@ import { pipeline } from 'node:stream';
 import { promisify } from 'node:util';
 import connectDB from './DB/connection.db';
 
-import { authRouter, userRouter, postRouter, initializeIo } from './modules'
+import { createHandler } from 'graphql-http/lib/use/express';
+import { authRouter, initializeIo, postRouter, userRouter } from './modules';
+import { chatRouter } from './modules/chat';
 import { createGetPreSignedLink, deleteFile, getFile } from './utils/multer/s3.config';
 import { BadRequestException, globalErrorHandling } from './utils/response/error.response';
+import { schema } from './modules/graphql/schema.gql';
+import { authentication } from './middleware/authentication.middleware';
 config({ path: resolve('./config/.env.dev') });
 
 
-
 const createS3WriteStreamPipe = promisify(pipeline)
-
-
-
-
 
 const limiter = rateLimit({
     windowMs: 60 * 60000,
@@ -29,20 +28,31 @@ const limiter = rateLimit({
     statusCode: 429
 })
 
-
-
 const bootstartp = async (): Promise<void> => {
     const app: Express = express();
     const port: number | string = process.env.PORT || 5000
     app.use(cors(), helmet(), express.json(), limiter);
 
+    app.all('graphql', authentication(), createHandler({
+        schema: schema,
+        context: (req) => ({ user: req.raw.user })
+    }))
+
+    app.get('sayHi', (req: Request, res: Response): Response => {
+        return res.json({ message: "done" })
+    })
+
+
     app.get('/', (req: Request, res: Response) => {
         res.json({ message: `welcome to ${process.env.APPLICATION_NAME}` })
     })
 
+
+
     app.use('/auth', authRouter)
     app.use('/user', userRouter)
     app.use('/post', postRouter)
+    app.use('/chat', chatRouter)
 
     app.get("test", async (req: Request, res: Response) => {
         const { Key } = req.query as { Key: string };

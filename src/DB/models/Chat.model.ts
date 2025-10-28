@@ -22,7 +22,7 @@ export interface IChat {
 
     group?: string;
     group_image?: string;
-    room_id?: string;
+    roomId?: string;
 
 
 
@@ -62,10 +62,10 @@ const chatSchema = new Schema<IChat>({
 
     group: { type: String },
     group_image: { type: String },
-    room_id: {
+    roomId: {
         type: String,
         required: function () {
-            return this.room_id
+            return this.roomId
         }
     },
     messages: [MessageSchema]
